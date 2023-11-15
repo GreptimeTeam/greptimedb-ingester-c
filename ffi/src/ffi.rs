@@ -38,7 +38,7 @@ pub unsafe extern "C" fn new_row_builder(
 ) -> libc::c_int {
     ensure_not_null!(table_name);
     let col_name = handle_result!(convert_c_string(table_name));
-    *res_ptr = Box::into_raw(Box::new(RowBuilder::new(col_name.to_string())));
+    *res_ptr = Box::into_raw(Box::new(RowBuilder::new(col_name)));
     StatusCode::Success as i32
 }
 
@@ -55,7 +55,7 @@ pub unsafe extern "C" fn add_column(
     let builder = unsafe { &mut *row_builder };
     let col_name = handle_result!(convert_c_string(col_name));
 
-    builder.add_col(col_name.to_string(), data_type, semantic_type);
+    builder.add_col(col_name, data_type, semantic_type);
     StatusCode::Success as i32
 }
 
@@ -85,7 +85,7 @@ pub unsafe extern "C" fn new_client(
     ensure_not_null!(endpoint);
     let database_name = handle_result!(convert_c_string(database_name));
     let endpoint = handle_result!(convert_c_string(endpoint));
-    let client = handle_result!(Client::new(database_name.to_string(), endpoint.to_string()));
+    let client = handle_result!(Client::new(database_name, endpoint));
 
     *res_ptr = Box::into_raw(Box::new(client));
 
