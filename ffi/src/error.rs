@@ -86,6 +86,20 @@ pub enum Error {
         location: Location,
         source: Utf8Error,
     },
+
+    #[snafu(display(
+        "Invalid column def, name: {}, data type: {}, semantic type: {}, location: {:?}",
+        name,
+        data_type,
+        semantic_type,
+        location
+    ))]
+    InvalidColumnDef {
+        name: String,
+        data_type: i32,
+        semantic_type: i32,
+        location: Location,
+    },
 }
 
 impl ErrorExt for Error {
@@ -98,6 +112,7 @@ impl ErrorExt for Error {
             Error::SchemaMismatch { .. } => StatusCode::InvalidArgument,
             Error::NullPointer { .. } => StatusCode::InvalidPointer,
             Error::InvalidCString { .. } => StatusCode::InvalidArgument,
+            Error::InvalidColumnDef { .. } => StatusCode::InvalidArgument,
         }
     }
 
@@ -109,7 +124,8 @@ impl ErrorExt for Error {
             | Error::SendRequest { location, .. }
             | Error::SchemaMismatch { location, .. }
             | Error::NullPointer { location, .. }
-            | Error::InvalidCString { location, .. } => Some(*location),
+            | Error::InvalidCString { location, .. }
+            | Error::InvalidColumnDef { location, .. } => Some(*location),
         }
     }
 

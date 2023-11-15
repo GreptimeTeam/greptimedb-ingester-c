@@ -18,21 +18,31 @@
 #include "stdio.h"
 
 int main() {
+    // 1. create a client
+    client_t* client = NULL;
+
+    int32_t err_code = new_client("public", "127.0.0.1:4001", &client);
+    printf("create client, code: %d\n", err_code);
+    if (err_code != Ok) {
+        return err_code;
+    }
+    assert(client != NULL);
+
+    // 2. define schema for table "humidity", it has 4 columns: ts, location, value and valid.
     ColumnDef columns[] = {{.name = "ts", .dataType = TimestampMillisecond, .semanticType = Timestamp},
                            {.name = "location", .dataType = String, .semanticType = Tag},
                            {.name = "value", .dataType = Float32, .semanticType = Field},
                            {.name = "valid", .dataType = Boolean, .semanticType = Field}};
 
     row_builder_t* builder = NULL;
-    int32_t err_code = create_row_builder("humidity", columns, sizeof(columns) / sizeof(columns[0]), &builder);
-
+    err_code = create_row_builder("humidity", columns, sizeof(columns) / sizeof(columns[0]), &builder);
     printf("create row builder, code: %d\n", err_code);
-
     if (err_code != Ok) {
         return err_code;
     }
     assert(builder != NULL);
 
+    // 3. insert values to row builder.
     Value values[] = {{
                           .timestampMillisecondValue = 1700047510000,
                       },
@@ -48,20 +58,14 @@ int main() {
 
     add_row(builder, values, sizeof(values) / sizeof(values[0]));
 
-    client_t* client = NULL;
-
-    err_code = new_client("public", "127.0.0.1:4001", &client);
-    printf("create client, code: %d\n", err_code);
-    if (err_code != Ok) {
-        return err_code;
-    }
-    assert(client != NULL);
-
+    // 4. write row to database
     err_code = write_row(client, builder);
     printf("write row, code: %d\n", err_code);
     if (err_code != Ok) {
         return err_code;
     }
+
+    // 5. destroy client.
     free_client(&client);
     // client pointer will be set to NULL after free.
     assert(client == NULL);

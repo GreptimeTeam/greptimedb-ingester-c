@@ -55,7 +55,7 @@ pub unsafe extern "C" fn add_column(
     let builder = unsafe { &mut *row_builder };
     let col_name = handle_result!(convert_c_string(col_name));
 
-    builder.add_col(col_name, data_type, semantic_type);
+    handle_result!(builder.add_col(col_name, data_type, semantic_type));
     StatusCode::Success as i32
 }
 

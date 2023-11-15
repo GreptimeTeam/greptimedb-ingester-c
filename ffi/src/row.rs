@@ -14,9 +14,9 @@
 
 use crate::util::convert_c_string;
 use crate::{debug, error, info};
-use greptimedb_client::api::v1::column::Values;
+use greptimedb_client::api::v1::column::{SemanticType, Values};
 use greptimedb_client::api::v1::{Column, ColumnDataType, InsertRequest};
-use snafu::ensure;
+use snafu::{ensure, OptionExt};
 
 #[repr(C)]
 pub union Value {
@@ -54,15 +54,37 @@ impl RowBuilder {
         }
     }
 
-    pub fn add_col(&mut self, name: String, data_type: i32, semantic_type: i32) {
-        info!("Adding col: {}/{}/{}", name, data_type, semantic_type);
+    pub fn add_col(
+        &mut self,
+        name: String,
+        data_type: i32,
+        semantic_type: i32,
+    ) -> error::Result<()> {
+        let data_type =
+            ColumnDataType::from_i32(data_type).context(error::InvalidColumnDefSnafu {
+                name: &name,
+                data_type,
+                semantic_type,
+            })?;
+        let semantic_type =
+            SemanticType::from_i32(semantic_type).context(error::InvalidColumnDefSnafu {
+                name: &name,
+                data_type,
+                semantic_type,
+            })?;
+        info!(
+            "Adding column to {}: {}/{:?}/{:?}",
+            &self.table_name, name, data_type, semantic_type
+        );
+
         self.columns.push(Column {
             column_name: name,
-            semantic_type,
+            semantic_type: semantic_type as i32,
             values: Some(Values::default()),
-            datatype: data_type,
+            datatype: data_type as i32,
             ..Default::default()
-        })
+        });
+        Ok(())
     }
 
     pub unsafe fn add_row(&mut self, values: &[Value]) -> error::Result<()> {
@@ -75,6 +97,7 @@ impl RowBuilder {
             }
         );
         for (col, val) in self.columns.iter_mut().zip(values.iter()) {
+            // safety: we've checked the validity of data type value in [add_column].
             let data_type = ColumnDataType::from_i32(col.datatype).unwrap();
 
             match data_type {
