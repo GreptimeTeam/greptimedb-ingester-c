@@ -1,8 +1,10 @@
 #! /bin/bash
 
-cd ffi
+cwd="$(pwd)"
+
+cd "${cwd}"/ffi
 taplo format --option "indent_string=    "
 cargo fmt --all
 
-cd ../cpp
-find . -type f \( -name "*.h" -o -name "*.cc" \) -exec clang-format -i -style=file {} \;
+cd "${cwd}"/cpp/src
+find . -iname '*.h' -o -iname '*.c' | xargs clang-format -i -style=file

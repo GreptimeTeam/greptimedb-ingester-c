@@ -14,6 +14,31 @@ enum Status {
     IllegalState = 1004,
 };
 
+enum SemanticType {
+    Tag = 0,
+    Field = 1,
+    Timestamp = 2,
+};
+
+enum DataType {
+    Boolean = 0,
+    Int8 = 1,
+    Int16 = 2,
+    Int32 = 3,
+    Int64 = 4,
+    Uint8 = 5,
+    Uint16 = 6,
+    Uint32 = 7,
+    Uint64 = 8,
+    Float32 = 9,
+    Float64 = 10,
+    String = 12,
+    TimestampSecond = 15,
+    TimestampMillisecond = 16,
+    TimestampMicrosecond = 17,
+    TimestampNanosecond = 18,
+};
+
 typedef union {
     bool boolValue;
     int8_t int8Value;
@@ -24,6 +49,10 @@ typedef union {
     uint16_t uint16Value;
     uint32_t uint32Value;
     uint64_t uint64Value;
+    int64_t timestampSecondValue;
+    int64_t timestampMillisecondValue;
+    int64_t timestampMicrosecondValue;
+    int64_t timestampNanosecondValue;
     float float32Value;
     double doubleValue;
 } Value;

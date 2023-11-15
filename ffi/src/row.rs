@@ -1,4 +1,4 @@
-use crate::error;
+use crate::{debug, error, info};
 use greptimedb_client::api::v1::column::Values;
 use greptimedb_client::api::v1::{Column, ColumnDataType, InsertRequest};
 use std::ffi;
@@ -36,7 +36,7 @@ impl RowBuilder {
     }
 
     pub fn add_col(&mut self, name: String, data_type: i32, semantic_type: i32) {
-        println!("Adding col: {}/{}/{}", name, data_type, semantic_type);
+        info!("Adding col: {}/{}/{}", name, data_type, semantic_type);
         self.columns.push(Column {
             column_name: name,
             semantic_type,
@@ -47,7 +47,7 @@ impl RowBuilder {
     }
 
     pub unsafe fn add_row(&mut self, values: &[Value]) {
-        println!("Adding values, len: {}", values.len());
+        debug!("Adding values, len: {}", values.len());
         assert_eq!(self.columns.len(), values.len());
         for (col, val) in self.columns.iter_mut().zip(values.iter()) {
             let data_type = ColumnDataType::from_i32(col.datatype).unwrap();

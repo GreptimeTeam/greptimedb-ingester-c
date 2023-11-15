@@ -3,6 +3,7 @@ use crate::inserter::Inserter;
 use crate::logger::init_logger;
 use crate::row::RowBuilder;
 use greptimedb_client::api::v1::InsertRequest;
+use std::sync::atomic::{AtomicU8, Ordering};
 use std::sync::RwLock;
 use tokio::runtime::Runtime;
 use tokio::sync::mpsc;
@@ -33,6 +34,11 @@ impl Client {
 
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_all()
+            .thread_name_fn(|| {
+                static ATOMIC_ID: AtomicU8 = AtomicU8::new(0);
+                let id = ATOMIC_ID.fetch_add(1, Ordering::Relaxed);
+                format!("gt-client-{}", id)
+            })
             .build()
             .unwrap();
         let (tx, rx) = mpsc::channel(1024);

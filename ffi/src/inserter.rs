@@ -32,12 +32,9 @@ impl Inserter {
         let stream_inserter = self.inner.as_mut().unwrap();
 
         while let Some(request) = self.insert_request_receiver.recv().await {
-            println!("Request: {:?}", request);
             if let Err(e) = stream_inserter.insert(vec![request]).await {
                 error!("Failed to send requests to database, error: {:?}", e);
                 break;
-            } else {
-                println!("Successfully write request");
             }
         }
 
