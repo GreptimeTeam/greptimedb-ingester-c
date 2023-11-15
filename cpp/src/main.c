@@ -34,7 +34,7 @@ int main() {
                            {.name = "value", .dataType = Float32, .semanticType = Field},
                            {.name = "valid", .dataType = Boolean, .semanticType = Field}};
 
-    row_builder_t* builder = NULL;
+    p_row_builder_t builder = NULL;
     err_code = create_row_builder("humidity", columns, sizeof(columns) / sizeof(columns[0]), &builder);
     printf("create row builder, code: %d\n", err_code);
     if (err_code != Ok) {

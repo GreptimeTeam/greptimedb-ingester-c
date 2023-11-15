@@ -32,7 +32,7 @@ macro_rules! handle_result {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn new_row_builder(
+pub unsafe extern "C" fn _new_row_builder(
     table_name: *const libc::c_char,
     res_ptr: *mut *const RowBuilder,
 ) -> libc::c_int {
@@ -43,7 +43,7 @@ pub unsafe extern "C" fn new_row_builder(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn add_column(
+pub unsafe extern "C" fn _define_column(
     row_builder: *mut RowBuilder,
     col_name: *const libc::c_char,
     data_type: libc::c_int,
