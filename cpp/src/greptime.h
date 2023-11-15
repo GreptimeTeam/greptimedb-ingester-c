@@ -106,7 +106,10 @@ extern int32_t write_row(p_client_t client, p_row_builder_t row);
 // Creates an empty row builder with given column definitions.
 int32_t create_row_builder(char* table_name, ColumnDef columns[], size_t len, row_builder_t** res) {
     row_builder_t* p_builder = NULL;
-    new_row_builder(table_name, &p_builder);  // todo check code
+    int code = new_row_builder(table_name, &p_builder);
+    if (code != Ok) {
+        return code;
+    }
     for (int i = 0; i < len; i++) {
         int code = add_column(p_builder, columns[i].name, columns[i].dataType, columns[i].semanticType);
         if (code != Ok) {
