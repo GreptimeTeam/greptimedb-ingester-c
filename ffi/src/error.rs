@@ -1,7 +1,7 @@
-use std::any::Any;
-use std::{fmt, panic};
 use backtrace::Backtrace;
 use snafu::{Location, Snafu};
+use std::any::Any;
+use std::{fmt, panic};
 use strum::EnumString;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -16,7 +16,6 @@ pub enum StatusCode {
     IllegalState = 1004,
 }
 
-
 impl fmt::Display for StatusCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{self:?}")
@@ -27,16 +26,16 @@ impl fmt::Display for StatusCode {
 #[snafu(visibility(pub))]
 pub enum Error {
     #[snafu(display(
-    "Failed to create client to {}, location: {}, source: {}",
-    grpc_endpoint,
-    location,
-    source
+        "Failed to create client to {}, location: {}, source: {}",
+        grpc_endpoint,
+        location,
+        source
     ))]
     CreateStreamInserter {
         grpc_endpoint: String,
         location: Location,
         source: greptimedb_client::Error,
-    }
+    },
 }
 
 pub trait ErrorExt: std::error::Error {
@@ -49,7 +48,6 @@ pub trait ErrorExt: std::error::Error {
     }
     fn as_any(&self) -> &dyn Any;
 }
-
 
 #[macro_export]
 macro_rules! ensure_not_null {

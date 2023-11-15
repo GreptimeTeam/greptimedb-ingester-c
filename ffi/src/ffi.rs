@@ -96,3 +96,17 @@ pub unsafe extern "C" fn write_row(client: *const Client, row: *mut RowBuilder) 
 
     StatusCode::Success as i32
 }
+
+#[no_mangle]
+pub extern "C" fn free_client(client_ptr: *mut Client) -> libc::c_int {
+    if client_ptr.is_null() {
+        return StatusCode::Success as i32;
+    }
+
+    unsafe {
+        let client = &mut *client_ptr;
+        client.stop();
+        let _ = Box::from_raw(client_ptr);
+    }
+    StatusCode::Success as i32
+}
