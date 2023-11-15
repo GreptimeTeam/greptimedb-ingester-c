@@ -16,6 +16,10 @@ pub union Value {
     pub u64_value: libc::c_ulong,
     pub f32_value: libc::c_float,
     pub f64_value: libc::c_double,
+    pub timestamp_second_value: libc::c_long,
+    pub timestamp_millisecond_value: libc::c_long,
+    pub timestamp_microsecond_value: libc::c_long,
+    pub timestamp_nanosecond_value: libc::c_long,
     pub string_value: *const libc::c_char,
 }
 
@@ -122,25 +126,25 @@ impl RowBuilder {
                     .as_mut()
                     .unwrap()
                     .ts_second_values
-                    .push(val.i64_value),
+                    .push(val.timestamp_second_value),
                 ColumnDataType::TimestampMillisecond => col
                     .values
                     .as_mut()
                     .unwrap()
                     .ts_millisecond_values
-                    .push(val.i64_value),
+                    .push(val.timestamp_millisecond_value),
                 ColumnDataType::TimestampMicrosecond => col
                     .values
                     .as_mut()
                     .unwrap()
                     .ts_microsecond_values
-                    .push(val.i64_value),
+                    .push(val.timestamp_microsecond_value),
                 ColumnDataType::TimestampNanosecond => col
                     .values
                     .as_mut()
                     .unwrap()
                     .ts_nanosecond_values
-                    .push(val.i64_value),
+                    .push(val.timestamp_nanosecond_value),
                 _ => {
                     unreachable!()
                 }

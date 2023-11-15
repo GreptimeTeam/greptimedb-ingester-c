@@ -59,36 +59,38 @@ typedef union {
 
 typedef struct {
     char* name;
-    int32_t data_type;
-    int32_t semantic_type;
+    int32_t dataType;
+    int32_t semanticType;
 } ColumnDef;
 
-// Opaque structs
+// Opaque Rust structs
 typedef struct RowBuilder row_builder_t;
 typedef struct Client client_t;
+typedef row_builder_t* p_row_builder_t;
+typedef client_t* p_client_t;
 
 // FFI functions
 // Creates a new row value builder
-extern int32_t new_row_builder(char* table_name, row_builder_t** res);
+extern int32_t new_row_builder(char* table_name, p_row_builder_t* res);
 
 // Add columns to row builder.
-extern int32_t add_column(row_builder_t* row_builder, char* name, int32_t data_type, int32_t semantic_type);
+extern int32_t add_column(p_row_builder_t row_builder, char* name, int32_t data_type, int32_t semantic_type);
 
 // Inserts a new row to row builder.
-extern int32_t add_row(row_builder_t* row_builder, Value* values, size_t len);
+extern int32_t add_row(p_row_builder_t row_builder, Value* values, size_t len);
 
-extern int32_t new_client(char* database_name, char* endpoint, client_t** client);
+extern int32_t new_client(char* database_name, char* endpoint, p_client_t* client);
 
-extern int32_t free_client(client_t* client);
+extern int32_t free_client(p_client_t client);
 
-extern int32_t write_row(client_t* client, row_builder_t* row);
+extern int32_t write_row(p_client_t client, p_row_builder_t row);
 
 // Creates an empty row builder with given column definitions.
 int32_t create_row_builder(char* table_name, ColumnDef columns[], size_t len, row_builder_t** res) {
     row_builder_t* p_builder = NULL;
     new_row_builder(table_name, &p_builder);  // todo check code
     for (int i = 0; i < len; i++) {
-        int code = add_column(p_builder, columns[i].name, columns[i].data_type, columns[i].semantic_type);
+        int code = add_column(p_builder, columns[i].name, columns[i].dataType, columns[i].semanticType);
         if (code != Ok) {
             return code;
         }
