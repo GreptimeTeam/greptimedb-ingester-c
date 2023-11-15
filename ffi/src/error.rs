@@ -16,6 +16,7 @@ use crate::error;
 use backtrace::Backtrace;
 use snafu::{Location, Snafu};
 use std::any::Any;
+use std::str::Utf8Error;
 use std::{fmt, panic};
 use strum::EnumString;
 
@@ -60,6 +61,31 @@ pub enum Error {
 
     #[snafu(display("Failed to send request, location: {}", location,))]
     SendRequest { location: Location },
+
+    #[snafu(display(
+        "Values to write do not match schema, value len: {}, schema fields len: {}, location: {}",
+        value_len,
+        schema_len,
+        location,
+    ))]
+    SchemaMismatch {
+        value_len: usize,
+        schema_len: usize,
+        location: Location,
+    },
+
+    #[snafu(display("Null pointer, location: {:?}", location))]
+    NullPointer { location: Location },
+
+    #[snafu(display(
+        "Cannot read c string to String, location: {:?}, source: {:?}",
+        location,
+        source
+    ))]
+    InvalidCString {
+        location: Location,
+        source: Utf8Error,
+    },
 }
 
 impl ErrorExt for Error {
@@ -69,6 +95,9 @@ impl ErrorExt for Error {
             Error::UnsupportedDataType { .. } => StatusCode::InvalidArgument,
             Error::ClientStopped { .. } => StatusCode::IllegalState,
             Error::SendRequest { .. } => StatusCode::Unknown,
+            Error::SchemaMismatch { .. } => StatusCode::InvalidArgument,
+            Error::NullPointer { .. } => StatusCode::InvalidPointer,
+            Error::InvalidCString { .. } => StatusCode::InvalidArgument,
         }
     }
 
@@ -77,7 +106,10 @@ impl ErrorExt for Error {
             Error::CreateStreamInserter { location, .. }
             | Error::UnsupportedDataType { location, .. }
             | Error::ClientStopped { location, .. }
-            | Error::SendRequest { location, .. } => Some(*location),
+            | Error::SendRequest { location, .. }
+            | Error::SchemaMismatch { location, .. }
+            | Error::NullPointer { location, .. }
+            | Error::InvalidCString { location, .. } => Some(*location),
         }
     }
 

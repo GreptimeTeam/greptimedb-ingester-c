@@ -17,7 +17,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 enum Status {
     Ok = 0,
@@ -69,6 +68,7 @@ typedef union {
     int64_t timestampNanosecondValue;
     float float32Value;
     double doubleValue;
+    char* stringValue;
 } Value;
 
 typedef struct {
@@ -87,16 +87,20 @@ typedef client_t* p_client_t;
 // Creates a new row value builder
 extern int32_t new_row_builder(char* table_name, p_row_builder_t* res);
 
-// Add columns to row builder.
+// Defines columns to row builder.
 extern int32_t add_column(p_row_builder_t row_builder, char* name, int32_t data_type, int32_t semantic_type);
 
 // Inserts a new row to row builder.
 extern int32_t add_row(p_row_builder_t row_builder, Value* values, size_t len);
 
+// Creates a new greptimedb client with given database name and endpoint.
+// The return value will be set to client pointer iff returned status code is Ok.
 extern int32_t new_client(char* database_name, char* endpoint, p_client_t* client);
 
-extern int32_t free_client(p_client_t client);
+// Destroys greptimedb client and releases all underlying resources.
+extern int32_t free_client(p_client_t* client);
 
+// Writes a row of data inside row builder to database.
 extern int32_t write_row(p_client_t client, p_row_builder_t row);
 
 // Creates an empty row builder with given column definitions.

@@ -15,7 +15,9 @@
 use crate::error::ErrorExt;
 use crate::error::StatusCode;
 use crate::row::{RowBuilder, Value};
+use crate::util::convert_c_string;
 use crate::{ensure_not_null, error, Client};
+use std::ptr;
 
 macro_rules! handle_result {
     ($expr: expr) => {
@@ -35,13 +37,7 @@ pub unsafe extern "C" fn new_row_builder(
     res_ptr: *mut *const RowBuilder,
 ) -> libc::c_int {
     ensure_not_null!(table_name);
-    let col_name = match std::ffi::CStr::from_ptr(table_name).to_str() {
-        Ok(s) => s,
-        Err(e) => {
-            panic!("Cannot convert table name, e: {:?}", e);
-        }
-    };
-
+    let col_name = handle_result!(convert_c_string(table_name));
     *res_ptr = Box::into_raw(Box::new(RowBuilder::new(col_name.to_string())));
     StatusCode::Success as i32
 }
@@ -57,12 +53,7 @@ pub unsafe extern "C" fn add_column(
     ensure_not_null!(col_name);
 
     let builder = unsafe { &mut *row_builder };
-    let col_name = match std::ffi::CStr::from_ptr(col_name).to_str() {
-        Ok(s) => s,
-        Err(e) => {
-            panic!("Cannot convert field name, e: {:?}", e);
-        }
-    };
+    let col_name = handle_result!(convert_c_string(col_name));
 
     builder.add_col(col_name.to_string(), data_type, semantic_type);
     StatusCode::Success as i32
@@ -92,20 +83,10 @@ pub unsafe extern "C" fn new_client(
 ) -> libc::c_int {
     ensure_not_null!(database_name);
     ensure_not_null!(endpoint);
-    let database_name = match std::ffi::CStr::from_ptr(database_name).to_str() {
-        Ok(s) => s,
-        Err(e) => {
-            panic!("Cannot convert database name, e: {:?}", e);
-        }
-    };
-    let endpoint = match std::ffi::CStr::from_ptr(endpoint).to_str() {
-        Ok(s) => s,
-        Err(e) => {
-            panic!("Cannot convert endpoint, e: {:?}", e);
-        }
-    };
-
+    let database_name = handle_result!(convert_c_string(database_name));
+    let endpoint = handle_result!(convert_c_string(endpoint));
     let client = handle_result!(Client::new(database_name.to_string(), endpoint.to_string()));
+
     *res_ptr = Box::into_raw(Box::new(client));
 
     StatusCode::Success as i32
@@ -122,15 +103,21 @@ pub unsafe extern "C" fn write_row(client: *const Client, row: *mut RowBuilder) 
 }
 
 #[no_mangle]
-pub extern "C" fn free_client(client_ptr: *mut Client) -> libc::c_int {
-    if client_ptr.is_null() {
+pub extern "C" fn free_client(p_client_ptr: *mut *mut Client) -> libc::c_int {
+    if p_client_ptr.is_null() {
         return StatusCode::Success as i32;
     }
 
     unsafe {
-        let client = &mut *client_ptr;
+        let client_ptr = &mut *p_client_ptr;
+        if client_ptr.is_null() {
+            return StatusCode::Success as i32;
+        }
+
+        let client = &mut **client_ptr;
         client.stop();
-        let _ = Box::from_raw(client_ptr);
+        let _ = Box::from_raw(client);
+        *client_ptr = ptr::null_mut();
     }
     StatusCode::Success as i32
 }

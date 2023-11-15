@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use crate::util::convert_c_string;
 use crate::{debug, error, info};
 use greptimedb_client::api::v1::column::Values;
 use greptimedb_client::api::v1::{Column, ColumnDataType, InsertRequest};
-use std::ffi;
+use snafu::ensure;
 
 #[repr(C)]
 pub union Value {
@@ -66,7 +67,13 @@ impl RowBuilder {
 
     pub unsafe fn add_row(&mut self, values: &[Value]) -> error::Result<()> {
         debug!("Adding values, len: {}", values.len());
-        assert_eq!(self.columns.len(), values.len());
+        ensure!(
+            self.columns.len() == values.len(),
+            error::SchemaMismatchSnafu {
+                value_len: values.len(),
+                schema_len: self.columns.len(),
+            }
+        );
         for (col, val) in self.columns.iter_mut().zip(values.iter()) {
             let data_type = ColumnDataType::from_i32(col.datatype).unwrap();
 
@@ -124,17 +131,12 @@ impl RowBuilder {
                 ColumnDataType::Float64 => {
                     col.values.as_mut().unwrap().f64_values.push(val.f64_value);
                 }
-                ColumnDataType::String => {
-                    let string_value = ffi::CStr::from_ptr(val.string_value)
-                        .to_str()
-                        .unwrap()
-                        .to_string();
-                    col.values
-                        .as_mut()
-                        .unwrap()
-                        .string_values
-                        .push(string_value)
-                }
+                ColumnDataType::String => col
+                    .values
+                    .as_mut()
+                    .unwrap()
+                    .string_values
+                    .push(convert_c_string(val.string_value)?),
                 ColumnDataType::TimestampSecond => col
                     .values
                     .as_mut()

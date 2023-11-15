@@ -28,6 +28,7 @@ mod ffi;
 mod inserter;
 mod logger;
 mod row;
+mod util;
 
 pub struct Client {
     runtime: Runtime,

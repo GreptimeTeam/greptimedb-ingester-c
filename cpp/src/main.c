@@ -19,6 +19,7 @@
 
 int main() {
     ColumnDef columns[] = {{.name = "ts", .dataType = TimestampMillisecond, .semanticType = Timestamp},
+                           {.name = "location", .dataType = String, .semanticType = Tag},
                            {.name = "value", .dataType = Float32, .semanticType = Field},
                            {.name = "valid", .dataType = Boolean, .semanticType = Field}};
 
@@ -34,6 +35,9 @@ int main() {
 
     Value values[] = {{
                           .timestampMillisecondValue = 1700047510000,
+                      },
+                      {
+                          .stringValue = "hangzhou",
                       },
                       {
                           .float32Value = 2.0,
@@ -58,6 +62,8 @@ int main() {
     if (err_code != Ok) {
         return err_code;
     }
-    free_client(client);
+    free_client(&client);
+    // client pointer will be set to NULL after free.
+    assert(client == NULL);
     return 0;
 }
