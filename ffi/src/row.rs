@@ -50,7 +50,7 @@ impl RowBuilder {
         })
     }
 
-    pub unsafe fn add_row(&mut self, values: &[Value]) {
+    pub unsafe fn add_row(&mut self, values: &[Value]) -> error::Result<()> {
         debug!("Adding values, len: {}", values.len());
         assert_eq!(self.columns.len(), values.len());
         for (col, val) in self.columns.iter_mut().zip(values.iter()) {
@@ -146,24 +146,26 @@ impl RowBuilder {
                     .ts_nanosecond_values
                     .push(val.timestamp_nanosecond_value),
                 _ => {
-                    unreachable!()
+                    return error::UnsupportedDataTypeSnafu {
+                        data_type: col.datatype,
+                    }
+                    .fail();
                 }
             }
         }
         self.rows += 1;
+        Ok(())
     }
 }
 
-impl TryFrom<&mut RowBuilder> for InsertRequest {
-    type Error = error::Error;
-
-    fn try_from(value: &mut RowBuilder) -> Result<Self, Self::Error> {
+impl From<&mut RowBuilder> for InsertRequest {
+    fn from(value: &mut RowBuilder) -> Self {
         let columns = std::mem::take(&mut value.columns);
-        Ok(InsertRequest {
+        InsertRequest {
             table_name: value.table_name.clone(),
             columns,
             row_count: value.rows as u32,
             region_number: 0,
-        })
+        }
     }
 }

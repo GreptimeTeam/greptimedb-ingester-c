@@ -3,8 +3,8 @@ use crate::inserter::Inserter;
 use crate::logger::init_logger;
 use crate::row::RowBuilder;
 use greptimedb_client::api::v1::InsertRequest;
+use snafu::OptionExt;
 use std::sync::atomic::{AtomicU8, Ordering};
-use std::sync::RwLock;
 use tokio::runtime::Runtime;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
@@ -56,11 +56,12 @@ impl Client {
         })
     }
 
-    pub fn write_row(&self, row: &mut RowBuilder) {
+    pub fn write_row(&self, row: &mut RowBuilder) -> error::Result<()> {
         self.tx
             .as_ref()
-            .unwrap()
-            .blocking_send(row.try_into().unwrap());
+            .context(error::ClientStoppedSnafu)?
+            .blocking_send(row.into())
+            .map_err(|_| error::SendRequestSnafu {}.build())
     }
 
     pub fn stop(&mut self) {

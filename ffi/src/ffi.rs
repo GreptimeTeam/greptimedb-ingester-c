@@ -1,8 +1,19 @@
+use crate::error::ErrorExt;
 use crate::error::StatusCode;
 use crate::row::{RowBuilder, Value};
 use crate::{ensure_not_null, error, Client};
-use greptimedb_client::api::v1::{Column, ColumnDataType};
-use std::ffi;
+
+macro_rules! handle_result {
+    ($expr: expr) => {
+        match $expr {
+            Err(e) => {
+                error!("Failed FFI invocation. Error: {:?}", e);
+                return e.status_code() as i32;
+            }
+            Ok(res) => res,
+        }
+    };
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn new_row_builder(
@@ -55,7 +66,7 @@ pub unsafe extern "C" fn add_row(
     let builder = unsafe { &mut *row_builder };
 
     let values = std::slice::from_raw_parts(values, value_len);
-    builder.add_row(values);
+    handle_result!(builder.add_row(values));
     StatusCode::Success as i32
 }
 
@@ -80,7 +91,7 @@ pub unsafe extern "C" fn new_client(
         }
     };
 
-    let client = Client::new(database_name.to_string(), endpoint.to_string()).unwrap();
+    let client = handle_result!(Client::new(database_name.to_string(), endpoint.to_string()));
     *res_ptr = Box::into_raw(Box::new(client));
 
     StatusCode::Success as i32
@@ -92,8 +103,7 @@ pub unsafe extern "C" fn write_row(client: *const Client, row: *mut RowBuilder) 
     ensure_not_null!(row);
     let client = unsafe { &*client };
     let row = unsafe { &mut *row };
-    client.write_row(row);
-
+    handle_result!(client.write_row(row));
     StatusCode::Success as i32
 }
 

@@ -1,3 +1,4 @@
+use crate::error;
 use backtrace::Backtrace;
 use snafu::{Location, Snafu};
 use std::any::Any;
@@ -36,6 +37,39 @@ pub enum Error {
         location: Location,
         source: greptimedb_client::Error,
     },
+
+    #[snafu(display("Unsupported data type: {}, location: {}", data_type, location,))]
+    UnsupportedDataType { data_type: i32, location: Location },
+
+    #[snafu(display("Client has already been closed, location: {}", location,))]
+    ClientStopped { location: Location },
+
+    #[snafu(display("Failed to send request, location: {}", location,))]
+    SendRequest { location: Location },
+}
+
+impl ErrorExt for Error {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Error::CreateStreamInserter { .. } => StatusCode::ServerUnavailable,
+            Error::UnsupportedDataType { .. } => StatusCode::InvalidArgument,
+            Error::ClientStopped { .. } => StatusCode::IllegalState,
+            Error::SendRequest { .. } => StatusCode::Unknown,
+        }
+    }
+
+    fn location_opt(&self) -> Option<Location> {
+        match self {
+            Error::CreateStreamInserter { location, .. }
+            | Error::UnsupportedDataType { location, .. }
+            | Error::ClientStopped { location, .. }
+            | Error::SendRequest { location, .. } => Some(*location),
+        }
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 pub trait ErrorExt: std::error::Error {
@@ -46,6 +80,7 @@ pub trait ErrorExt: std::error::Error {
     fn location_opt(&self) -> Option<snafu::Location> {
         None
     }
+
     fn as_any(&self) -> &dyn Any;
 }
 
@@ -66,7 +101,7 @@ pub fn set_panic_hook() {
         let backtrace = Backtrace::new();
         let backtrace = format!("{backtrace:?}");
         if let Some(location) = panic.location() {
-            println!(
+            error!(
                 "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:?}",
                 panic,
                 location.file(),
@@ -75,7 +110,7 @@ pub fn set_panic_hook() {
                 backtrace,
             );
         } else {
-            println!("Panic: {:?}, backtrace: {:?}", panic, backtrace,);
+            error!("Panic: {:?}, backtrace: {:?}", panic, backtrace,);
         }
 
         default_hook(panic);
