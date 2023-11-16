@@ -43,6 +43,23 @@ pub unsafe extern "C" fn _new_row_builder(
 }
 
 #[no_mangle]
+pub extern "C" fn free_row_builder(res_ptr: *mut *mut RowBuilder) -> libc::c_int {
+    if res_ptr.is_null() {
+        return StatusCode::Success as i32;
+    }
+    unsafe {
+        let row_builder_ptr = &mut *res_ptr;
+        if row_builder_ptr.is_null() {
+            return StatusCode::Success as i32;
+        }
+        let _ = Box::from_raw(*row_builder_ptr);
+        *row_builder_ptr = ptr::null_mut();
+    }
+
+    StatusCode::Success as i32
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn _define_column(
     row_builder: *mut RowBuilder,
     col_name: *const libc::c_char,

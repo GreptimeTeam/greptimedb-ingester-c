@@ -106,7 +106,7 @@ extern int32_t _new_row_builder(char* table_name, p_row_builder_t* res);
 extern int32_t _define_column(p_row_builder_t row_builder, char* name, int32_t data_type, int32_t semantic_type);
 
 // Creates an empty row builder with given column definitions.
-int32_t create_row_builder(char* table_name, ColumnDef columns[], size_t len, row_builder_t** res) {
+int32_t new_row_builder(char* table_name, ColumnDef columns[], size_t len, row_builder_t** res) {
     row_builder_t* p_builder = NULL;
     int code = _new_row_builder(table_name, &p_builder);
     if (code != Ok) {
@@ -122,3 +122,6 @@ int32_t create_row_builder(char* table_name, ColumnDef columns[], size_t len, ro
     *res = p_builder;
     return Ok;
 }
+
+// Destroys row builder and releases all underlying resource.
+int32_t free_row_builder(row_builder_t** res);
