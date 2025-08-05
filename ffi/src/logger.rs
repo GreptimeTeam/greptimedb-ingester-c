@@ -328,5 +328,3 @@ macro_rules! trace {
         $crate::log!($crate::logger::Level::TRACE, $($arg)+)
     };
 }
-
-pub use {debug, error, info};
