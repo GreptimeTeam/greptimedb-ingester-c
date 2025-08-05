@@ -45,12 +45,18 @@ enum DataType {
     Uint64 = 8,
     Float32 = 9,
     Float64 = 10,
+    Binary = 11,
     String = 12,
     TimestampSecond = 15,
     TimestampMillisecond = 16,
     TimestampMicrosecond = 17,
     TimestampNanosecond = 18,
 };
+
+typedef struct {
+    uint8_t* data;
+    size_t len;
+} BinaryValue;
 
 typedef union {
     bool boolValue;
@@ -68,6 +74,7 @@ typedef union {
     int64_t timestampNanosecondValue;
     float float32Value;
     double doubleValue;
+    BinaryValue binaryValue;
     char* stringValue;
 } Value;
 
@@ -106,7 +113,7 @@ extern int32_t _new_row_builder(char* table_name, p_row_builder_t* res);
 extern int32_t _define_column(p_row_builder_t row_builder, char* name, int32_t data_type, int32_t semantic_type);
 
 // Creates an empty row builder with given column definitions.
-inline int32_t new_row_builder(char* table_name, ColumnDef columns[], size_t len, row_builder_t** res) {
+static inline int32_t new_row_builder(char* table_name, ColumnDef columns[], size_t len, row_builder_t** res) {
     row_builder_t* p_builder = NULL;
     int code = _new_row_builder(table_name, &p_builder);
     if (code != Ok) {
