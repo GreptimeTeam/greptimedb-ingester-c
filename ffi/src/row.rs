@@ -103,93 +103,93 @@ impl RowBuilder {
             match data_type {
                 ColumnDataType::Boolean => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .bool_values
                         .push(val.bool_value == 1);
                 }
                 ColumnDataType::Int8 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .i8_values
                         .push(val.i8_value as i32);
                 }
                 ColumnDataType::Int16 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .i16_values
                         .push(val.i16_value as i32);
                 }
                 ColumnDataType::Int32 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .i32_values
                         .push(val.i32_value);
                 }
                 ColumnDataType::Int64 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .i64_values
                         .push(val.i64_value);
                 }
                 ColumnDataType::Uint8 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .u8_values
                         .push(val.u8_value as u32);
                 }
                 ColumnDataType::Uint16 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .u16_values
                         .push(val.u16_value as u32);
                 }
                 ColumnDataType::Uint32 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .u32_values
                         .push(val.u32_value);
                 }
                 ColumnDataType::Uint64 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .u64_values
                         .push(val.u64_value);
                 }
                 ColumnDataType::Float32 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .f32_values
                         .push(val.f32_value);
                 }
                 ColumnDataType::Float64 => {
                     col.values
-                        .get_or_insert_with(|| Default::default())
+                        .get_or_insert_with(Default::default)
                         .f64_values
                         .push(val.f64_value);
                 }
                 ColumnDataType::String => col
                     .values
-                    .get_or_insert_with(|| Default::default())
+                    .get_or_insert_with(Default::default)
                     .string_values
                     .push(convert_c_string(val.string_value)?),
                 ColumnDataType::TimestampSecond => col
                     .values
-                    .get_or_insert_with(|| Default::default())
+                    .get_or_insert_with(Default::default)
                     .ts_second_values
                     .push(val.timestamp_second_value),
                 ColumnDataType::TimestampMillisecond => col
                     .values
-                    .get_or_insert_with(|| Default::default())
+                    .get_or_insert_with(Default::default)
                     .ts_millisecond_values
                     .push(val.timestamp_millisecond_value),
                 ColumnDataType::TimestampMicrosecond => col
                     .values
-                    .get_or_insert_with(|| Default::default())
+                    .get_or_insert_with(Default::default)
                     .ts_microsecond_values
                     .push(val.timestamp_microsecond_value),
                 ColumnDataType::TimestampNanosecond => col
                     .values
-                    .get_or_insert_with(|| Default::default())
+                    .get_or_insert_with(Default::default)
                     .ts_nanosecond_values
                     .push(val.timestamp_nanosecond_value),
                 _ => {

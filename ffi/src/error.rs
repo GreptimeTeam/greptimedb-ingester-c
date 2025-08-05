@@ -15,7 +15,6 @@
 use crate::error;
 use backtrace::Backtrace;
 use snafu::{Location, Snafu};
-use std::any::Any;
 use std::str::Utf8Error;
 use std::{fmt, panic};
 use strum::EnumString;
@@ -115,35 +114,12 @@ impl ErrorExt for Error {
             Error::InvalidColumnDef { .. } => StatusCode::InvalidArgument,
         }
     }
-
-    fn location_opt(&self) -> Option<Location> {
-        match self {
-            Error::CreateStreamInserter { location, .. }
-            | Error::UnsupportedDataType { location, .. }
-            | Error::ClientStopped { location, .. }
-            | Error::SendRequest { location, .. }
-            | Error::SchemaMismatch { location, .. }
-            | Error::NullPointer { location, .. }
-            | Error::InvalidCString { location, .. }
-            | Error::InvalidColumnDef { location, .. } => Some(*location),
-        }
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 
 pub trait ErrorExt: std::error::Error {
     fn status_code(&self) -> StatusCode {
         StatusCode::Unknown
     }
-
-    fn location_opt(&self) -> Option<snafu::Location> {
-        None
-    }
-
-    fn as_any(&self) -> &dyn Any;
 }
 
 #[macro_export]
