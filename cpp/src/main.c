@@ -29,7 +29,12 @@ int main() {
     ColumnDef columns[] = {{.name = "ts", .dataType = TimestampMillisecond, .semanticType = Timestamp},
                            {.name = "location", .dataType = String, .semanticType = Tag},
                            {.name = "value", .dataType = Float32, .semanticType = Field},
-                           {.name = "valid", .dataType = Boolean, .semanticType = Field}};
+                           {.name = "valid", .dataType = Boolean, .semanticType = Field},
+                           {.name = "rawdata", .dataType = Binary, .semanticType = Field}};
+
+    // utf-8: "hangzhou:2.0" for hangzhou, "shanghai:2.3" for shanghai, UTF-8 encoded
+    uint8_t hangzhou_rawdata[] = {0x68, 0x61, 0x6e, 0x67, 0x7a, 0x68, 0x6f, 0x75, 0x3a, 0x32, 0x2e, 0x30};
+    uint8_t shanghai_rawdata[] = {0x73, 0x68, 0x61, 0x6e, 0x67, 0x68, 0x61, 0x69, 0x3a, 0x32, 0x2e, 0x33};
 
     p_row_builder_t builder = NULL;
     err_code = new_row_builder("humidity", columns, sizeof(columns) / sizeof(columns[0]), &builder);
@@ -48,6 +53,9 @@ int main() {
                                },
                                {
                                    .boolValue = true,
+                               },
+                               {
+                                   .binaryValue = {.data = hangzhou_rawdata, .len = sizeof(hangzhou_rawdata)},
                                }};
 
     add_row(builder, values_hangzhou, sizeof(values_hangzhou) / sizeof(values_hangzhou[0]));
@@ -68,6 +76,9 @@ int main() {
                                },
                                {
                                    .boolValue = true,
+                               },
+                               {
+                                   .binaryValue = {.data = shanghai_rawdata, .len = sizeof(shanghai_rawdata)},
                                }};
 
     add_row(builder, values_shanghai, sizeof(values_shanghai) / sizeof(values_shanghai[0]));

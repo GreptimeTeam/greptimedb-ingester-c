@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::util::convert_c_string;
+use std::mem::ManuallyDrop;
+
+use crate::util::{convert_c_binary, convert_c_string};
 use crate::{debug, error, info};
 use greptimedb_client::api::v1::column::{SemanticType, Values};
 use greptimedb_client::api::v1::{Column, ColumnDataType, InsertRequest};
@@ -35,7 +37,14 @@ pub union Value {
     pub timestamp_millisecond_value: libc::c_long,
     pub timestamp_microsecond_value: libc::c_long,
     pub timestamp_nanosecond_value: libc::c_long,
+    pub binary_value: ManuallyDrop<BinaryValue>,
     pub string_value: *const libc::c_char,
+}
+
+#[repr(C)]
+pub struct BinaryValue {
+    data: *mut u8,
+    len: usize,
 }
 
 #[repr(C)]
@@ -166,6 +175,15 @@ impl RowBuilder {
                         .get_or_insert_with(Default::default)
                         .f64_values
                         .push(val.f64_value);
+                }
+                ColumnDataType::Binary => {
+                    col.values
+                        .get_or_insert_with(Default::default)
+                        .binary_values
+                        .push(convert_c_binary(
+                            val.binary_value.data,
+                            val.binary_value.len,
+                        )?);
                 }
                 ColumnDataType::String => col
                     .values
