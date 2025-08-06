@@ -32,7 +32,7 @@ int main() {
                            {.name = "valid", .dataType = Boolean, .semanticType = Field},
                            {.name = "rawdata", .dataType = Binary, .semanticType = Field}};
 
-    // utf-8: "hangzhou:2.0" for hangzhou, "shanghai:2.3" for shanghai
+    // utf-8: "hangzhou:2.0" for hangzhou, "shanghai:2.3" for shanghai, UTF-8 encoded
     uint8_t hangzhou_rawdata[] = {0x68, 0x61, 0x6e, 0x67, 0x7a, 0x68, 0x6f, 0x75, 0x3a, 0x32, 0x2e, 0x30};
     uint8_t shanghai_rawdata[] = {0x73, 0x68, 0x61, 0x6e, 0x67, 0x68, 0x61, 0x69, 0x3a, 0x32, 0x2e, 0x33};
 
