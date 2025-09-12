@@ -3,7 +3,7 @@ FROM greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:l
 WORKDIR /build
 COPY . .
 
-RUN cargo build --release --manifest-path ffi/Cargo.toml
+RUN cd ffi && cargo build --release
 
 FROM scratch
 COPY --from=builder /build/ffi/target/release/libgreptimedb_client_cpp_ffi.so .
