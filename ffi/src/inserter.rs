@@ -12,14 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::error::CreateStreamInserterSnafu;
-use crate::{debug, error};
-use greptimedb_client::api::v1::InsertRequest;
-use greptimedb_client::StreamInserter;
-use snafu::ResultExt;
+use crate::error;
+use greptimedb_client::{api::v1::InsertRequest, Database};
 
 pub struct Inserter {
-    inner: Option<StreamInserter>,
+    client: Database,
     insert_request_receiver: tokio::sync::mpsc::Receiver<InsertRequest>,
 }
 
@@ -31,30 +28,18 @@ impl Inserter {
     ) -> error::Result<Self> {
         let grpc_client = greptimedb_client::Client::with_urls(vec![&grpc_endpoint]);
         let client = greptimedb_client::Database::new_with_dbname(db_name, grpc_client);
-
-        let stream_inserter = client
-            .streaming_inserter_with_channel_size(1024)
-            .context(CreateStreamInserterSnafu { grpc_endpoint })?;
-
         Ok(Self {
-            inner: Some(stream_inserter),
+            client,
             insert_request_receiver,
         })
     }
 
     pub async fn run(&mut self) {
-        let stream_inserter = self.inner.as_mut().unwrap();
-
         while let Some(request) = self.insert_request_receiver.recv().await {
-            if let Err(e) = stream_inserter.insert(vec![request]).await {
+            if let Err(e) = self.client.insert(vec![request]).await {
                 error!("Failed to send requests to database, error: {:?}", e);
                 break;
             }
-        }
-
-        match self.inner.take().unwrap().finish().await {
-            Ok(rows) => debug!("Stream inserter finished after inserted {} rows", rows),
-            Err(e) => error!("Failed to finish the stream inserter, error {:?}", e),
         }
     }
 }

@@ -58,7 +58,6 @@ impl Client {
             .unwrap();
         let (tx, rx) = mpsc::channel(1024);
 
-        // todo: maybe store task handle.
         let handle = runtime.spawn(async move {
             let mut inserter = Inserter::new(database_name, addr, rx).unwrap();
             inserter.run().await;
