@@ -14,16 +14,17 @@ on:
 
 jobs:
   build-artifacts:
-    if: ${{ matrix.arch == inputs.arch }}
+    if: ${{ matrix.arch == github.event.inputs.arch }}
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
+        arch: [aarch64, x86_64]
         include:
           - arch: aarch64
             runner: ubuntu-2204-32-cores-arm
             artifact_name: libgreptimedb-client-cpp-ffi-aarch64-linux
           - arch: x86_64
-            runner: ubuntu-2204-32-cores-x86
+            runner: ubuntu-22.04
             artifact_name: libgreptimedb-client-cpp-ffi-x86_64-linux
     steps:
       - uses: actions/checkout@v4
