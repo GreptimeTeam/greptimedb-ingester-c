@@ -16,7 +16,7 @@ jobs:
   build-artifacts:
     runs-on: ${{ github.event.inputs.arch == 'aarch64'
       && 'ubuntu-2204-32-cores-arm'
-      || 'ubuntu-2204-32-cores-x86' }}
+      || 'ubuntu-22.04-32-cores' }}
 
     steps:
       - name: Checkout
