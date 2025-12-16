@@ -2,13 +2,29 @@ name: Build artifacts
 
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        description: "Target architecture"
+        required: true
+        type: choice
+        default: aarch64
+        options:
+          - aarch64
+          - x86_64
 
 jobs:
   build-artifacts:
-    runs-on: ${{ matrix.os }}
+    if: matrix.arch == inputs.arch
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        os: [ ubuntu-2204-32-cores-arm ]
+        include:
+          - arch: aarch64
+            runner: ubuntu-2204-32-cores-arm
+            artifact_name: libgreptimedb-client-cpp-ffi-aarch64-linux
+          - arch: x86_64
+            runner: ubuntu-2204-32-cores-x86
+            artifact_name: libgreptimedb-client-cpp-ffi-x86_64-linux
     steps:
       - uses: actions/checkout@v4
       
@@ -33,5 +49,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libgreptimedb-client-cpp-ffi-aarch64-linux
+          name: ${{ matrix.artifact_name }}
           path: ./bins
