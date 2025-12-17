@@ -15,7 +15,7 @@
 use std::mem::ManuallyDrop;
 
 use crate::util::{convert_c_binary, convert_c_string};
-use crate::{debug, error, info};
+use crate::{debug, error};
 use greptimedb_client::api::v1::column::{SemanticType, Values};
 use greptimedb_client::api::v1::{Column, ColumnDataType, InsertRequest};
 use snafu::{ensure, OptionExt};
@@ -81,7 +81,7 @@ impl RowBuilder {
                 data_type,
                 semantic_type,
             })?;
-        info!(
+        debug!(
             "Adding column to {}: {}/{:?}/{:?}",
             &self.table_name, name, data_type, semantic_type
         );
