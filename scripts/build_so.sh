@@ -3,7 +3,7 @@ set -euo pipefail
 
 cwd="$(pwd)"
 
-cd ${cwd}/ffi
+cd "${cwd}/ffi"
 cargo build --release
 
 mkdir -p "${cwd}/build"
