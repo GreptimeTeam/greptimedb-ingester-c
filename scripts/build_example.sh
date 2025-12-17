@@ -1,9 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 cwd="$(pwd)"
 
-[[ -d build ]] || mkdir build
+mkdir -p "${cwd}/build"
+cp "${cwd}/ffi/target/release/libgreptimedb_client_cpp_ffi.so" "${cwd}/build"
 
-cp "${cwd}"/ffi/target/debug/libgreptimedb_client_cpp_ffi.so build
-
-gcc -g "${cwd}"/cpp/src/main.c -L"${cwd}"/build -lgreptimedb_client_cpp_ffi -o "${cwd}"/build/ffi-example
+gcc -g "${cwd}/cpp/src/main.c" -L"${cwd}/build" -lgreptimedb_client_cpp_ffi -o "${cwd}/build/ffi-example"

@@ -1,7 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 cwd="$(pwd)"
 
-cargo build --all-targets --manifest-path="${cwd}"/ffi/Cargo.toml
+cargo build --release --all-targets --manifest-path="${cwd}/ffi/Cargo.toml"
 
-cp "${cwd}"/cpp/src/greptime.h "${cwd}"/build
+mkdir -p "${cwd}/build"
+cp "${cwd}/cpp/src/greptime.h" "${cwd}/build"
