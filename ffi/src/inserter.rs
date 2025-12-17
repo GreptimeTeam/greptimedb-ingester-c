@@ -34,6 +34,7 @@ impl Inserter {
 
         let stream_inserter = client
             .streaming_inserter_with_channel_size(1024)
+            .map_err(Box::new)
             .context(CreateStreamInserterSnafu { grpc_endpoint })?;
 
         Ok(Self {

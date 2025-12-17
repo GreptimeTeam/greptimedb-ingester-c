@@ -2,17 +2,29 @@ name: Build artifacts
 
 on:
   workflow_dispatch:
+    inputs:
+      arch:
+        description: "Target architecture"
+        required: true
+        type: choice
+        default: aarch64
+        options:
+          - aarch64
+          - x86_64
 
 jobs:
   build-artifacts:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ ubuntu-2204-32-cores-arm ]
+    runs-on: ${{ github.event.inputs.arch == 'aarch64'
+      && 'ubuntu-2204-32-cores-arm'
+      || 'ubuntu-22.04-32-cores' }}
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - uses: docker/setup-buildx-action@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build artifacts
         uses: docker/build-push-action@v3
         env:
@@ -26,12 +38,14 @@ jobs:
       - name: Pack artifacts
         shell: bash
         run: |
-          mkdir bins
-          cp ./build/bins/libgreptimedb_client_cpp_ffi.so bins
-          cp ./cpp/src/greptime.h bins
+          mkdir -p bins
+          cp ./build/bins/libgreptimedb_client_cpp_ffi.so bins/
+          cp ./build/bins/ffi-example bins/
+          cp ./cpp/src/greptime.h bins/
+          cp ./cpp/src/main.c bins/ffi-example.c
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libgreptimedb-client-cpp-ffi-aarch64-linux
+          name: libgreptimedb-client-cpp-ffi-${{ github.event.inputs.arch }}-linux
           path: ./bins
