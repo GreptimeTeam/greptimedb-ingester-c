@@ -2,7 +2,6 @@
 
 cwd="$(pwd)"
 
-cd ${cwd}/ffi
-cargo build --release
+cargo build --all-targets --manifest-path="${cwd}"/ffi/Cargo.toml
 
 cp "${cwd}"/cpp/src/greptime.h "${cwd}"/build
