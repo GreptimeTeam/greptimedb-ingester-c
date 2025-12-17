@@ -42,6 +42,7 @@ jobs:
           cp ./build/bins/libgreptimedb_client_cpp_ffi.so bins/
           cp ./build/bins/ffi-example bins/
           cp ./cpp/src/greptime.h bins/
+          cp ./cpp/src/main.c bins/ffi-example.c
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
