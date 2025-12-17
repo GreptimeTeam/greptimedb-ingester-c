@@ -49,7 +49,7 @@ pub enum Error {
     CreateStreamInserter {
         grpc_endpoint: String,
         location: Location,
-        source: greptimedb_client::Error,
+        source: Box<greptimedb_client::Error>,
     },
 
     #[snafu(display("Unsupported data type: {}, location: {}", data_type, location,))]
