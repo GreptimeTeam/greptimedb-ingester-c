@@ -1,4 +1,4 @@
-FROM greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:latest AS builder
+FROM greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:rust-1.92-20251217 AS builder
 
 WORKDIR /build
 COPY . .
