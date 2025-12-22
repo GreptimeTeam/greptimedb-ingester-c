@@ -119,7 +119,8 @@ static inline int32_t new_row_builder(char* table_name, ColumnDef columns[], siz
     if (code != Ok) {
         return code;
     }
-    for (int i = 0; i < len; i++) {
+    size_t i;
+    for (i = 0; i < len; i++) {
         int code = _define_column(p_builder, columns[i].name, columns[i].dataType, columns[i].semanticType);
         if (code != Ok) {
             return code;
