@@ -11,13 +11,25 @@ on:
         options:
           - aarch64
           - x86_64
+      glibc:
+        description: "Target glibc version"
+        required: true
+        type: choice
+        default: glibc-2.27
+        options:
+          - glibc-2.27(ubuntu-18.04)
+          - glibc-2.19(ubuntu-14.04)
 
 jobs:
   build-artifacts:
-    runs-on: ${{ github.event.inputs.arch == 'aarch64'
+    name: Build ${{ inputs.arch }} on ${{ inputs.glibc }}
+    runs-on: ${{ inputs.arch == 'aarch64'
       && 'ubuntu-2204-32-cores-arm'
       || 'ubuntu-22.04-32-cores' }}
-
+    env:
+      BUILDER_IMAGE: ${{ inputs.glibc == 'glibc-2.27'
+        && 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:rust-1.92-20251217'
+        || 'greptime-registry-vpc.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu14:rust-1.92-20251222' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,6 +46,8 @@ jobs:
           push: false
           provenance: false
           outputs: type=local,dest=./build/bins
+          build-args: |
+            BUILDER_IMAGE=${{ env.BUILDER_IMAGE }}
 
       - name: Pack artifacts
         shell: bash
@@ -47,5 +61,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libgreptimedb-client-cpp-ffi-${{ github.event.inputs.arch }}-linux
+          name: ${{ format('libgreptimedb-client-cpp-ffi-{0}-{1}-linux', inputs.arch, inputs.glibc) }}
           path: ./bins
