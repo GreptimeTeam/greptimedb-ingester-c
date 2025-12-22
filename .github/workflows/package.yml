@@ -29,7 +29,7 @@ jobs:
     env:
       BUILDER_IMAGE: ${{ inputs.glibc == 'glibc-2.27'
         && 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:rust-1.92-20251217'
-        || 'greptime-registry-vpc.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu14:rust-1.92-20251222' }}
+        || 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu14:rust-1.92-20251222' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
