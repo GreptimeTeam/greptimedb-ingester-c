@@ -62,5 +62,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('greptimedb-c-client-{0}-{1}.zip', inputs.arch, env.GLIBC_LABEL) }}
+          name: ${{ format('greptimedb-c-client-{0}-{1}', inputs.arch, env.GLIBC_LABEL) }}
           path: ./bins
