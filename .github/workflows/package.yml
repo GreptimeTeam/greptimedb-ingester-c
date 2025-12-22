@@ -54,7 +54,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p bins
-          cp ./build/bins/libgreptimedb_client_cpp_ffi.so bins/
+          cp ./build/bins/libgreptime.so bins/
           cp ./build/bins/ffi-example bins/
           cp ./cpp/src/greptime.h bins/
           cp ./cpp/src/main.c bins/ffi-example.c
@@ -62,5 +62,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('libgreptimedb-client-cpp-ffi-{0}-{1}.zip', inputs.arch, env.GLIBC_LABEL) }}
+          name: ${{ format('greptimedb-c-client-{0}-{1}.zip', inputs.arch, env.GLIBC_LABEL) }}
           path: ./bins

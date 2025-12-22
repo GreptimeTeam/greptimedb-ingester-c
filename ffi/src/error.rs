@@ -48,18 +48,29 @@ pub enum Error {
     ))]
     CreateStreamInserter {
         grpc_endpoint: String,
+        #[snafu(implicit)]
         location: Location,
         source: Box<greptimedb_client::Error>,
     },
 
     #[snafu(display("Unsupported data type: {}, location: {}", data_type, location,))]
-    UnsupportedDataType { data_type: i32, location: Location },
+    UnsupportedDataType {
+        data_type: i32,
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     #[snafu(display("Client has already been closed, location: {}", location,))]
-    ClientStopped { location: Location },
+    ClientStopped {
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     #[snafu(display("Failed to send request, location: {}", location,))]
-    SendRequest { location: Location },
+    SendRequest {
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     #[snafu(display(
         "Values to write do not match schema, value len: {}, schema fields len: {}, location: {}",
@@ -70,11 +81,15 @@ pub enum Error {
     SchemaMismatch {
         value_len: usize,
         schema_len: usize,
+        #[snafu(implicit)]
         location: Location,
     },
 
     #[snafu(display("Null pointer, location: {:?}", location))]
-    NullPointer { location: Location },
+    NullPointer {
+        #[snafu(implicit)]
+        location: Location,
+    },
 
     #[snafu(display(
         "Cannot read c string to String, location: {:?}, source: {:?}",
@@ -82,6 +97,7 @@ pub enum Error {
         source
     ))]
     InvalidCString {
+        #[snafu(implicit)]
         location: Location,
         source: Utf8Error,
     },
@@ -97,6 +113,7 @@ pub enum Error {
         name: String,
         data_type: i32,
         semantic_type: i32,
+        #[snafu(implicit)]
         location: Location,
     },
 }

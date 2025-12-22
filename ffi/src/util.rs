@@ -1,5 +1,5 @@
 use crate::error;
-use snafu::{ensure, ResultExt};
+use snafu::{ResultExt, ensure};
 use std::ffi;
 
 pub fn convert_c_string(c_str: *const libc::c_char) -> error::Result<String> {
