@@ -12,13 +12,13 @@ on:
           - aarch64
           - x86_64
       glibc:
-        description: "Target glibc version"
+        description: "Target glibc/distro combo"
         required: true
         type: choice
-        default: glibc-2.27
+        default: ubuntu18.04 (glibc2.27)
         options:
-          - glibc-2.27(ubuntu-18.04)
-          - glibc-2.19(ubuntu-14.04)
+          - ubuntu18.04 (glibc2.27)
+          - ubuntu14.04 (glibc2.19)
 
 jobs:
   build-artifacts:
@@ -27,9 +27,10 @@ jobs:
       && 'ubuntu-2204-32-cores-arm'
       || 'ubuntu-22.04-32-cores' }}
     env:
-      BUILDER_IMAGE: ${{ inputs.glibc == 'glibc-2.27'
+      BUILDER_IMAGE: ${{ inputs.glibc == 'ubuntu18.04 (glibc2.27)'
         && 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:rust-1.92-20251217'
         || 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu14:rust-1.92-20251222' }}
+      GLIBC_LABEL: ${{ inputs.glibc == 'ubuntu18.04 (glibc2.27)' && 'glibc2.27' || 'glibc2.19' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,5 +62,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ format('libgreptimedb-client-cpp-ffi-{0}-{1}-linux', inputs.arch, inputs.glibc) }}
+          name: ${{ format('libgreptimedb-client-cpp-ffi-{0}-{1}.zip', inputs.arch, env.GLIBC_LABEL) }}
           path: ./bins
