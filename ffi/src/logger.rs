@@ -14,7 +14,7 @@
 
 use lazy_static::lazy_static;
 use serde_derive::{Deserialize, Serialize};
-pub use tracing::{event, Level};
+pub use tracing::{Level, event};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_bunyan_formatter::JsonStorageLayer;
@@ -22,7 +22,7 @@ use tracing_log::LogTracer;
 use tracing_subscriber::fmt::Layer;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::prelude::*;
-use tracing_subscriber::{filter, Registry};
+use tracing_subscriber::{Registry, filter};
 
 lazy_static! {
     static ref LOG_GUARDS: Vec<WorkerGuard> = init_logger_inner();

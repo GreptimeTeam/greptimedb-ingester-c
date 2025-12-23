@@ -11,13 +11,26 @@ on:
         options:
           - aarch64
           - x86_64
+      glibc:
+        description: "Target glibc/distro combo"
+        required: true
+        type: choice
+        default: ubuntu18.04 (glibc2.27)
+        options:
+          - ubuntu18.04 (glibc2.27)
+          - ubuntu14.04 (glibc2.19)
 
 jobs:
   build-artifacts:
-    runs-on: ${{ github.event.inputs.arch == 'aarch64'
+    name: Build ${{ inputs.arch }} on ${{ inputs.glibc }}
+    runs-on: ${{ inputs.arch == 'aarch64'
       && 'ubuntu-2204-32-cores-arm'
       || 'ubuntu-22.04-32-cores' }}
-
+    env:
+      BUILDER_IMAGE: ${{ inputs.glibc == 'ubuntu18.04 (glibc2.27)'
+        && 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu18:rust-1.92-20251217'
+        || 'greptime-registry.cn-hangzhou.cr.aliyuncs.com/greptime/dev-build-ubuntu14:rust-1.92-20251222' }}
+      GLIBC_LABEL: ${{ inputs.glibc == 'ubuntu18.04 (glibc2.27)' && 'glibc2.27' || 'glibc2.19' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,12 +47,14 @@ jobs:
           push: false
           provenance: false
           outputs: type=local,dest=./build/bins
+          build-args: |
+            BUILDER_IMAGE=${{ env.BUILDER_IMAGE }}
 
       - name: Pack artifacts
         shell: bash
         run: |
           mkdir -p bins
-          cp ./build/bins/libgreptimedb_client_cpp_ffi.so bins/
+          cp ./build/bins/libgreptime.so bins/
           cp ./build/bins/ffi-example bins/
           cp ./cpp/src/greptime.h bins/
           cp ./cpp/src/main.c bins/ffi-example.c
@@ -47,5 +62,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: libgreptimedb-client-cpp-ffi-${{ github.event.inputs.arch }}-linux
+          name: ${{ format('greptimedb-c-client-{0}-{1}', inputs.arch, env.GLIBC_LABEL) }}
           path: ./bins

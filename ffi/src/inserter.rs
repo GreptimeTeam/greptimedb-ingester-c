@@ -14,8 +14,8 @@
 
 use crate::error::CreateStreamInserterSnafu;
 use crate::{debug, error};
-use greptimedb_client::api::v1::InsertRequest;
 use greptimedb_client::StreamInserter;
+use greptimedb_client::api::v1::InsertRequest;
 use snafu::ResultExt;
 
 pub struct Inserter {
