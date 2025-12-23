@@ -120,7 +120,7 @@ pub unsafe extern "C" fn write_row(client: *const Client, row: *mut RowBuilder) 
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn free_client(p_client_ptr: *mut *mut Client) -> libc::c_int {
+pub unsafe extern "C" fn free_client(p_client_ptr: *mut *mut Client) -> libc::c_int {
     if p_client_ptr.is_null() {
         return StatusCode::Success as i32;
     }
