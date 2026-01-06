@@ -4,6 +4,8 @@ FROM ${BUILDER_IMAGE} AS builder
 WORKDIR /build
 COPY . .
 
+ENV RING_DISABLE_ASM=1
+
 RUN bash /build/scripts/build_so.sh
 RUN bash /build/scripts/build_example.sh
 
