@@ -21,7 +21,7 @@ int main() {
     // 1. create a client
     client_t* client = NULL;
 
-    int32_t err_code = new_client("public", "127.0.0.1:4001", &client);
+    int32_t err_code = new_client("public", "127.0.0.1:4001", NULL, NULL, &client);
     assert(err_code == 0);
     assert(client != NULL);
 

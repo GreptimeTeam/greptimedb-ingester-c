@@ -92,9 +92,13 @@ typedef client_t* p_client_t;
 
 // FFI functions
 
-// Creates a new greptimedb client with given database name and endpoint.
+// Creates a new greptimedb client with given database name, endpoint and
+// basic auth credentials.
+// `username` and `password` are optional and can both be NULL.
+// If `username` is non-NULL and `password` is NULL, empty password is used.
+// If `username` is NULL and `password` is non-NULL, it returns InvalidArgument.
 // The return value will be set to client pointer iff returned status code is Ok.
-extern int32_t new_client(char* database_name, char* endpoint, p_client_t* client);
+extern int32_t new_client(char* database_name, char* endpoint, char* username, char* password, p_client_t* client);
 
 // Destroys greptimedb client and releases all underlying resources.
 extern int32_t free_client(p_client_t* client);

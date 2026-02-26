@@ -43,7 +43,11 @@ impl Drop for Client {
 }
 
 impl Client {
-    pub fn new(database_name: String, addr: String) -> error::Result<Self> {
+    pub fn new(
+        database_name: String,
+        addr: String,
+        auth: Option<(String, String)>,
+    ) -> error::Result<Self> {
         init_logger();
         set_panic_hook();
 
@@ -60,7 +64,7 @@ impl Client {
 
         // todo: maybe store task handle.
         let handle = runtime.spawn(async move {
-            let mut inserter = Inserter::new(database_name, addr, rx).unwrap();
+            let mut inserter = Inserter::new(database_name, addr, auth, rx).unwrap();
             inserter.run().await;
         });
 

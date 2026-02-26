@@ -97,13 +97,33 @@ pub unsafe extern "C" fn add_row(
 pub unsafe extern "C" fn new_client(
     database_name: *const libc::c_char,
     endpoint: *const libc::c_char,
+    username: *const libc::c_char,
+    password: *const libc::c_char,
     res_ptr: *mut *const Client,
 ) -> libc::c_int {
     ensure_not_null!(database_name);
     ensure_not_null!(endpoint);
     let database_name = handle_result!(convert_c_string(database_name));
     let endpoint = handle_result!(convert_c_string(endpoint));
-    let client = handle_result!(Client::new(database_name, endpoint));
+    let username = if username.is_null() {
+        None
+    } else {
+        Some(handle_result!(convert_c_string(username)))
+    };
+    let password = if password.is_null() {
+        None
+    } else {
+        Some(handle_result!(convert_c_string(password)))
+    };
+
+    let auth = match (username, password) {
+        (None, None) => None,
+        (Some(u), Some(p)) => Some((u, p)),
+        (Some(u), None) => Some((u, String::new())),
+        (None, Some(_)) => return StatusCode::InvalidArgument as i32,
+    };
+
+    let client = handle_result!(Client::new(database_name, endpoint, auth));
 
     unsafe { *res_ptr = Box::into_raw(Box::new(client)) };
     StatusCode::Success as i32
