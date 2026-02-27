@@ -15,7 +15,9 @@
 use crate::error::CreateStreamInserterSnafu;
 use crate::{debug, error};
 use greptimedb_client::StreamInserter;
+use greptimedb_client::api::v1::auth_header::AuthScheme;
 use greptimedb_client::api::v1::InsertRequest;
+use greptimedb_client::api::v1::Basic;
 use snafu::ResultExt;
 
 pub struct Inserter {
@@ -27,10 +29,14 @@ impl Inserter {
     pub fn new(
         db_name: String,
         grpc_endpoint: String,
+        auth: Option<(String, String)>,
         insert_request_receiver: tokio::sync::mpsc::Receiver<InsertRequest>,
     ) -> error::Result<Self> {
         let grpc_client = greptimedb_client::Client::with_urls(vec![&grpc_endpoint]);
-        let client = greptimedb_client::Database::new_with_dbname(db_name, grpc_client);
+        let mut client = greptimedb_client::Database::new_with_dbname(db_name, grpc_client);
+        if let Some((username, password)) = auth {
+            client.set_auth(AuthScheme::Basic(Basic { username, password }));
+        }
 
         let stream_inserter = client
             .streaming_inserter_with_channel_size(1024)
