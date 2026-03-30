@@ -122,8 +122,6 @@ pub trait ErrorExt: std::error::Error {
     }
 }
 
-static SET_PANIC_HOOK: Once = Once::new();
-
 #[macro_export]
 macro_rules! ensure_not_null {
     ($ptr: expr) => {
@@ -134,27 +132,31 @@ macro_rules! ensure_not_null {
     };
 }
 
+static SET_PANIC_HOOK: Once = Once::new();
+
 /// Sets logging panic hook.
 pub fn set_panic_hook() {
     SET_PANIC_HOOK.call_once(|| {
         let default_hook = panic::take_hook();
         panic::set_hook(Box::new(move |panic| {
-            let backtrace = Backtrace::new();
-            let backtrace = format!("{backtrace:?}");
-            if let Some(location) = panic.location() {
-                error!(
-                    "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:?}",
-                    panic,
-                    location.file(),
-                    location.line(),
-                    location.column(),
-                    backtrace,
-                );
-            } else {
-                error!("Panic: {:?}, backtrace: {:?}", panic, backtrace,);
-            }
-
+            log_panic(panic);
             default_hook(panic);
         }));
     });
+}
+
+fn log_panic(panic: &panic::PanicHookInfo<'_>) {
+    let backtrace = format!("{:?}", Backtrace::new());
+
+    match panic.location() {
+        Some(location) => error!(
+            "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:?}",
+            panic,
+            location.file(),
+            location.line(),
+            location.column(),
+            backtrace,
+        ),
+        None => error!("Panic: {:?}, backtrace: {:?}", panic, backtrace),
+    }
 }
