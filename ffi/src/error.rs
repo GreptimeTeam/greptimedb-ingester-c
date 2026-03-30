@@ -41,20 +41,7 @@ impl fmt::Display for StatusCode {
 #[derive(Debug, Snafu)]
 #[snafu(visibility(pub))]
 pub enum Error {
-    #[snafu(display(
-        "Failed to create client to {}, location: {}, source: {}",
-        grpc_endpoint,
-        location,
-        source
-    ))]
-    CreateStreamInserter {
-        grpc_endpoint: String,
-        #[snafu(implicit)]
-        location: Location,
-        source: Box<greptimedb_ingester::Error>,
-    },
-
-    #[snafu(display("Failed to insert req"))]
+    #[snafu(display("Failed to insert req, location: {}, source: {}", location, source))]
     InsertReq {
         source: Box<greptimedb_ingester::Error>,
         #[snafu(implicit)]
@@ -64,12 +51,6 @@ pub enum Error {
     #[snafu(display("Unsupported data type: {}, location: {}", data_type, location,))]
     UnsupportedDataType {
         data_type: i32,
-        #[snafu(implicit)]
-        location: Location,
-    },
-
-    #[snafu(display("Failed to send request, location: {}", location,))]
-    SendRequest {
         #[snafu(implicit)]
         location: Location,
     },
@@ -124,10 +105,8 @@ pub enum Error {
 impl ErrorExt for Error {
     fn status_code(&self) -> StatusCode {
         match self {
-            Error::CreateStreamInserter { .. } => StatusCode::ServerUnavailable,
             Error::UnsupportedDataType { .. } => StatusCode::InvalidArgument,
             Error::InsertReq { .. } => StatusCode::Unknown,
-            Error::SendRequest { .. } => StatusCode::Unknown,
             Error::SchemaMismatch { .. } => StatusCode::InvalidArgument,
             Error::NullPointer { .. } => StatusCode::InvalidPointer,
             Error::InvalidCString { .. } => StatusCode::InvalidArgument,
