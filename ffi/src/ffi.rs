@@ -38,6 +38,7 @@ pub unsafe extern "C" fn _new_row_builder(
     res_ptr: *mut *const RowBuilder,
 ) -> libc::c_int {
     ensure_not_null!(table_name);
+    ensure_not_null!(res_ptr);
     let col_name = handle_result!(convert_c_string(table_name));
     unsafe {
         *res_ptr = Box::into_raw(Box::new(RowBuilder::new(col_name)));
@@ -104,6 +105,7 @@ pub unsafe extern "C" fn new_client(
 ) -> libc::c_int {
     ensure_not_null!(database_name);
     ensure_not_null!(endpoint);
+    ensure_not_null!(res_ptr);
     let database_name = handle_result!(convert_c_string(database_name));
     let endpoint = handle_result!(convert_c_string(endpoint));
     let username = if username.is_null() {
