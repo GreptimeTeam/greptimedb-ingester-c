@@ -13,27 +13,24 @@
 // limitations under the License.
 
 use crate::error::set_panic_hook;
-use crate::inserter::Inserter;
 use crate::logger::init_logger;
 use crate::row::RowBuilder;
-use greptimedb_client::api::v1::InsertRequest;
-use snafu::OptionExt;
+use greptimedb_ingester::api::v1::auth_header::AuthScheme;
+use greptimedb_ingester::api::v1::{Basic, RowInsertRequest, RowInsertRequests};
+use greptimedb_ingester::database::Database;
+use snafu::ResultExt;
 use std::sync::atomic::{AtomicU8, Ordering};
 use tokio::runtime::Runtime;
-use tokio::sync::mpsc;
-use tokio::task::JoinHandle;
 
 mod error;
 mod ffi;
-mod inserter;
 mod logger;
 mod row;
 mod util;
 
 pub struct Client {
     runtime: Runtime,
-    tx: Option<mpsc::Sender<InsertRequest>>,
-    handle: Option<JoinHandle<()>>,
+    client: Database,
 }
 
 impl Drop for Client {
@@ -60,36 +57,25 @@ impl Client {
             })
             .build()
             .unwrap();
-        let (tx, rx) = mpsc::channel(1024);
 
-        // todo: maybe store task handle.
-        let handle = runtime.spawn(async move {
-            let mut inserter = Inserter::new(database_name, addr, auth, rx).unwrap();
-            inserter.run().await;
-        });
+        let client = greptimedb_ingester::client::Client::with_urls(vec![&addr]);
+        let mut client = Database::new_with_dbname(database_name, client);
+        if let Some((username, password)) = auth {
+            client.set_auth(AuthScheme::Basic(Basic { username, password }));
+        }
 
-        Ok(Self {
-            runtime,
-            tx: Some(tx),
-            handle: Some(handle),
-        })
+        Ok(Self { runtime, client })
     }
 
     pub fn write_row(&self, row: &mut RowBuilder) -> error::Result<()> {
-        self.tx
-            .as_ref()
-            .context(error::ClientStoppedSnafu)?
-            .blocking_send(row.into())
-            .map_err(|_| error::SendRequestSnafu {}.build())
-    }
-
-    pub fn stop(&mut self) {
-        self.tx.take();
-        let handle = self.handle.take();
-        self.runtime.block_on(async move {
-            if let Some(handle) = handle {
-                handle.await.unwrap();
-            }
-        });
+        let insert_req: RowInsertRequest = row.into();
+        let insert_reqs = RowInsertRequests {
+            inserts: vec![insert_req],
+        };
+        self.runtime
+            .block_on(self.client.insert(insert_reqs))
+            .map_err(Box::new)
+            .context(error::InsertReqSnafu)?;
+        Ok(())
     }
 }
