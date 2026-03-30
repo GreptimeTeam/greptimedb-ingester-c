@@ -150,13 +150,13 @@ fn log_panic(panic: &panic::PanicHookInfo<'_>) {
 
     match panic.location() {
         Some(location) => error!(
-            "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:?}",
+            "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:#?}",
             panic,
             location.file(),
             location.line(),
             location.column(),
             backtrace,
         ),
-        None => error!("Panic: {:?}, backtrace: {:?}", panic, backtrace),
+        None => error!("Panic: {:?}, backtrace: {:#?}", panic, backtrace),
     }
 }
