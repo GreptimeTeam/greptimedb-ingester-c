@@ -69,7 +69,7 @@ impl Client {
     }
 
     pub fn write_row(&self, row: &mut RowBuilder) -> error::Result<()> {
-        let insert_req: RowInsertRequest = row.into();
+        let insert_req: RowInsertRequest = row.as_insert_request();
         let insert_reqs = RowInsertRequests {
             inserts: vec![insert_req],
         };
@@ -77,6 +77,7 @@ impl Client {
             .block_on(self.client.insert(insert_reqs))
             .map_err(Box::new)
             .context(error::InsertReqSnafu)?;
+        row.clear_rows();
         Ok(())
     }
 }

@@ -165,17 +165,27 @@ impl RowBuilder {
         self.rows.push(Row { values: row_values });
         Ok(())
     }
+
+    pub fn as_insert_request(&self) -> RowInsertRequest {
+        RowInsertRequest {
+            table_name: self.table_name.clone(),
+            rows: Some(Rows {
+                schema: self.schema.clone(),
+                rows: self.rows.clone(),
+            }),
+        }
+    }
+
+    pub fn clear_rows(&mut self) {
+        self.rows.clear();
+    }
 }
 
 impl From<&mut RowBuilder> for RowInsertRequest {
     fn from(value: &mut RowBuilder) -> Self {
-        RowInsertRequest {
-            table_name: value.table_name.clone(),
-            rows: Some(Rows {
-                schema: value.schema.clone(),
-                rows: std::mem::take(&mut value.rows),
-            }),
-        }
+        let request = value.as_insert_request();
+        value.clear_rows();
+        request
     }
 }
 

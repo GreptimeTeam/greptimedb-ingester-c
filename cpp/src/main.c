@@ -17,6 +17,21 @@
 #include "greptime.h"
 #include "stdio.h"
 
+static int32_t write_row_with_retry(client_t* client, row_builder_t* builder, int max_retries) {
+    int32_t err_code = Ok;
+
+    for (int attempt = 1; attempt <= max_retries; attempt++) {
+        err_code = write_row(client, builder);
+        if (err_code == Ok) {
+            return Ok;
+        }
+
+        fprintf(stderr, "write_row failed on attempt %d/%d: %d\n", attempt, max_retries, err_code);
+    }
+
+    return err_code;
+}
+
 int main() {
     // 1. create a client
     client_t* client = NULL;
@@ -61,7 +76,7 @@ int main() {
     add_row(builder, values_hangzhou, sizeof(values_hangzhou) / sizeof(values_hangzhou[0]));
 
     // 4. write row to database
-    err_code = write_row(client, builder);
+    err_code = write_row_with_retry(client, builder, 3);
     assert(err_code == 0);
 
     // 5. insert another values to row builder by reusing row builder
@@ -84,7 +99,7 @@ int main() {
     add_row(builder, values_shanghai, sizeof(values_shanghai) / sizeof(values_shanghai[0]));
 
     // 6. write row to database
-    err_code = write_row(client, builder);
+    err_code = write_row_with_retry(client, builder, 3);
     assert(err_code == 0);
 
     // 7. destroy row builder and client.
