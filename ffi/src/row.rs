@@ -14,13 +14,14 @@
 
 use std::mem::ManuallyDrop;
 
+use crate::error;
 use crate::util::{convert_c_binary, convert_c_string};
-use crate::{debug, error};
 use greptimedb_ingester::SemanticType;
 use greptimedb_ingester::api::v1::{
     ColumnDataType, ColumnSchema, Row, RowInsertRequest, Rows, Value as RowValue, value::ValueData,
 };
 use snafu::{ResultExt, ensure};
+use tracing::debug;
 
 #[repr(C)]
 pub union Value {

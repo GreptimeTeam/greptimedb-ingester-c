@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::error;
 use backtrace::Backtrace;
 use prost::UnknownEnumValue;
 use snafu::{Location, Snafu};
 use std::str::Utf8Error;
 use std::{fmt, panic};
 use strum::EnumString;
+use tracing::error;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -125,7 +125,7 @@ pub trait ErrorExt: std::error::Error {
 macro_rules! ensure_not_null {
     ($ptr: expr) => {
         if $ptr.is_null() {
-            $crate::error!("[PANIC] {} ptr cannot be null", stringify!($ptr));
+            tracing::error!("[PANIC] {} ptr cannot be null", stringify!($ptr));
             return StatusCode::InvalidPointer as i32;
         }
     };

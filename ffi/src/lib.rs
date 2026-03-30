@@ -21,6 +21,7 @@ use greptimedb_ingester::database::Database;
 use snafu::ResultExt;
 use std::sync::atomic::{AtomicU8, Ordering};
 use tokio::runtime::Runtime;
+use tracing::info;
 
 mod error;
 mod ffi;

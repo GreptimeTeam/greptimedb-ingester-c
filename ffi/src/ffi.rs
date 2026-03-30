@@ -16,14 +16,15 @@ use crate::error::ErrorExt;
 use crate::error::StatusCode;
 use crate::row::{RowBuilder, Value};
 use crate::util::convert_c_string;
-use crate::{Client, ensure_not_null, error};
+use crate::{Client, ensure_not_null};
 use std::ptr;
+use tracing::error;
 
 macro_rules! handle_result {
     ($expr: expr) => {
         match $expr {
             Err(e) => {
-                error!("Failed FFI invocation. Error: {:?}", e);
+                error!(err.msg = %e, err.code = %e.status_code(), "Failed FFI invocation");
                 return e.status_code() as i32;
             }
             Ok(res) => res,
