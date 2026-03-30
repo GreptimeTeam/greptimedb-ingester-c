@@ -16,6 +16,7 @@ use backtrace::Backtrace;
 use prost::UnknownEnumValue;
 use snafu::{Location, Snafu};
 use std::str::Utf8Error;
+use std::sync::Once;
 use std::{fmt, panic};
 use strum::EnumString;
 use tracing::error;
@@ -121,6 +122,8 @@ pub trait ErrorExt: std::error::Error {
     }
 }
 
+static SET_PANIC_HOOK: Once = Once::new();
+
 #[macro_export]
 macro_rules! ensure_not_null {
     ($ptr: expr) => {
@@ -133,23 +136,25 @@ macro_rules! ensure_not_null {
 
 /// Sets logging panic hook.
 pub fn set_panic_hook() {
-    let default_hook = panic::take_hook();
-    panic::set_hook(Box::new(move |panic| {
-        let backtrace = Backtrace::new();
-        let backtrace = format!("{backtrace:?}");
-        if let Some(location) = panic.location() {
-            error!(
-                "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:?}",
-                panic,
-                location.file(),
-                location.line(),
-                location.column(),
-                backtrace,
-            );
-        } else {
-            error!("Panic: {:?}, backtrace: {:?}", panic, backtrace,);
-        }
+    SET_PANIC_HOOK.call_once(|| {
+        let default_hook = panic::take_hook();
+        panic::set_hook(Box::new(move |panic| {
+            let backtrace = Backtrace::new();
+            let backtrace = format!("{backtrace:?}");
+            if let Some(location) = panic.location() {
+                error!(
+                    "Panic: {:?}, file: {}, line: {}, col: {}, backtrace: {:?}",
+                    panic,
+                    location.file(),
+                    location.line(),
+                    location.column(),
+                    backtrace,
+                );
+            } else {
+                error!("Panic: {:?}, backtrace: {:?}", panic, backtrace,);
+            }
 
-        default_hook(panic);
-    }));
+            default_hook(panic);
+        }));
+    });
 }
