@@ -151,7 +151,6 @@ pub unsafe extern "C" fn free_client(p_client_ptr: *mut *mut Client) -> libc::c_
     }
 
     let client = unsafe { &mut **client_ptr };
-    client.stop();
     let _ = unsafe { Box::from_raw(client) };
     *client_ptr = ptr::null_mut();
     StatusCode::Success as i32

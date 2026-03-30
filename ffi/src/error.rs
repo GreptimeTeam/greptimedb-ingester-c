@@ -14,6 +14,7 @@
 
 use crate::error;
 use backtrace::Backtrace;
+use prost::UnknownEnumValue;
 use snafu::{Location, Snafu};
 use std::str::Utf8Error;
 use std::{fmt, panic};
@@ -50,18 +51,19 @@ pub enum Error {
         grpc_endpoint: String,
         #[snafu(implicit)]
         location: Location,
-        source: Box<greptimedb_client::Error>,
+        source: Box<greptimedb_ingester::Error>,
+    },
+
+    #[snafu(display("Failed to insert req"))]
+    InsertReq {
+        source: Box<greptimedb_ingester::Error>,
+        #[snafu(implicit)]
+        location: Location,
     },
 
     #[snafu(display("Unsupported data type: {}, location: {}", data_type, location,))]
     UnsupportedDataType {
         data_type: i32,
-        #[snafu(implicit)]
-        location: Location,
-    },
-
-    #[snafu(display("Client has already been closed, location: {}", location,))]
-    ClientStopped {
         #[snafu(implicit)]
         location: Location,
     },
@@ -113,6 +115,7 @@ pub enum Error {
         name: String,
         data_type: i32,
         semantic_type: i32,
+        source: UnknownEnumValue,
         #[snafu(implicit)]
         location: Location,
     },
@@ -123,7 +126,7 @@ impl ErrorExt for Error {
         match self {
             Error::CreateStreamInserter { .. } => StatusCode::ServerUnavailable,
             Error::UnsupportedDataType { .. } => StatusCode::InvalidArgument,
-            Error::ClientStopped { .. } => StatusCode::IllegalState,
+            Error::InsertReq { .. } => StatusCode::Unknown,
             Error::SendRequest { .. } => StatusCode::Unknown,
             Error::SchemaMismatch { .. } => StatusCode::InvalidArgument,
             Error::NullPointer { .. } => StatusCode::InvalidPointer,

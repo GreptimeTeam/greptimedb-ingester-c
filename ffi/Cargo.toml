@@ -9,9 +9,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 backtrace = "0.3"
-greptimedb-client = { git = "https://github.com/GreptimeTeam/greptimedb-client-rust.git", rev = "bc32362adf0df17a41a95bae4221d6d8f1775656" }
+greptimedb-ingester = { git = "https://github.com/GreptimeTeam/greptimedb-client-rust.git", rev = "c687c4f3f658308ce42b3f09fb3aab53ed6a1c8e" }
 lazy_static = "1.4"
 libc = "0.2"
+prost = "0.13"
 serde = "1.0"
 snafu = { version = "0.8", features = ["backtrace"] }
 tokio = { version = "1", features = ["full"] }
