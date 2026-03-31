@@ -39,10 +39,27 @@ jobs:
       - name: Check typos
         uses: crate-ci/typos@master
         
+  clang-format:
+    name: Clang Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format
+
+      - name: Check clang-format
+        run: find c/src -iname '*.h' -o -iname '*.c' | xargs clang-format -style=file --dry-run -Werror
+
   cargo-check:
     if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ffi
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,14 +68,13 @@ jobs:
         uses: arduino/setup-protoc@v2
         
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN }}
-          override: true
           components: rustfmt, clippy
           
       - name: Check format
-        run: cargo fmt
+        run: cargo fmt --check
 
       - name: Check clippy
         run: cargo clippy --workspace --all-targets -- -D warnings -D clippy::print_stdout -D clippy::print_stderr
