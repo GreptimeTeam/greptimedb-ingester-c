@@ -2,8 +2,22 @@
 set -euo pipefail
 
 cwd="$(pwd)"
+os="$(uname -s)"
+
+case "${os}" in
+Darwin)
+    lib_name="libgreptime.dylib"
+    ;;
+Linux | FreeBSD)
+    lib_name="libgreptime.so"
+    ;;
+*)
+    echo "Unsupported platform: ${os}" >&2
+    exit 1
+    ;;
+esac
 
 mkdir -p "${cwd}/build"
-cp "${cwd}/ffi/target/release/libgreptime.so" "${cwd}/build/libgreptime.so"
+cp "${cwd}/ffi/target/release/${lib_name}" "${cwd}/build/${lib_name}"
 
-gcc -g "${cwd}/c/src/main.c" -L"${cwd}/build" -lgreptime -o "${cwd}/build/ffi-example"
+cc -g "${cwd}/c/src/main.c" -L"${cwd}/build" -lgreptime -o "${cwd}/build/ffi-example"
